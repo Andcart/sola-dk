@@ -36,7 +36,7 @@ The script is designed with a clear separation of concerns, using distinct class
 
 ### Orchestration Example
 
-The modular design enables a clean composition of components. The following is a simplified view of how they are orchestrated in the main script, illustrating a dependency injection pattern:
+The modular design enables a clean composition of components. The following is a simplified view of how they are orchestrated in the main script, illustrating a simple dependency injection pattern:
 
 ```python
 import asyncio
@@ -126,9 +126,9 @@ venv\Scripts\activate
 
 ### 4. Install Dependencies
 
-Create a `requirements.txt` file in the project root. This is a standard way to manage project dependencies.
+Create a `requirements.txt` file in the project root with the following content:
 
-```
+```text
 web3
 python-dotenv
 aiohttp
@@ -159,16 +159,17 @@ CONTRACT_ADDRESS="0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
 
 # The "vault" address that receives locked tokens.
 # The script monitors Transfer events where this address is the recipient.
-# For testing, find a real address that receives WETH, like a bridge or exchange deposit address.
-BRIDGE_VAULT_ADDRESS="0x1111111111111111111111111111111111111111"
+# For testing, find a real address that receives WETH, such as a large bridge or exchange deposit address.
+BRIDGE_VAULT_ADDRESS="0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640"
 ```
 
 ### 6. Run the Script
 
 Execute the main script from your terminal. The script will start polling from a recent block; depending on contract activity, it may take a few moments to find and process the first event.
 
+(Assuming the main script is named `main.py`)
 ```bash
-python script.py
+python main.py
 ```
 
 ### 7. Expected Output
@@ -176,25 +177,25 @@ python script.py
 The script will start, connect to the chains, and begin polling for events. You should see output similar to the following as it finds and processes them:
 
 ```text
-2023-10-27 14:30:00 - INFO - [CrossChainBridgeListener] - Initializing Cross-Chain Bridge Listener service...
-2023-10-27 14:30:01 - INFO - [BlockchainConnector] - Connecting to SourceChain via https://mainnet.infura.io/v3/...
-2023-10-27 14:30:03 - INFO - [BlockchainConnector] - Successfully connected to SourceChain. Latest block: 19500125
-2023-10-27 14:30:03 - INFO - [BlockchainConnector] - Connecting to DestinationChain via https://polygon-mainnet.infura.io/v3/...
-2023-10-27 14:30:05 - INFO - [BlockchainConnector] - Successfully connected to DestinationChain. Latest block: 55403210
-2023-10-27 14:30:05 - INFO - [BridgeContractMonitor] - Monitoring contract at 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
-2023-10-27 14:30:05 - INFO - [CrossChainBridgeListener] - Service started. Listening for new cross-chain events...
-2023-10-27 14:30:05 - INFO - [BridgeContractMonitor] - Polling for 'Transfer' events to 0x1111111111111111111111111111111111111111 from block 19500001...
-2023-10-27 14:30:08 - INFO - [BridgeContractMonitor] - Found 1 new event(s).
-2023-10-27 14:30:08 - INFO - [EventProcessor] - Processing event from transaction: 0x...hash...
-2023-10-27 14:30:09 - INFO - [EventProcessor] - Fetched price for 'ethereum': $3150.75
-2023-10-27 14:30:09 - INFO - [EventProcessor] - Successfully processed event. Locked value: $1575.38
-2023-10-27 14:30:09 - WARNING - [TransactionBroadcaster] - --- SIMULATION MODE --- Not broadcasting a real transaction.
-2023-10-27 14:30:09 - INFO - [TransactionBroadcaster] - 
+YYYY-MM-DD HH:MM:SS - INFO - [CrossChainBridgeListener] - Initializing Cross-Chain Bridge Listener service...
+YYYY-MM-DD HH:MM:SS - INFO - [BlockchainConnector] - Connecting to SourceChain via https://mainnet.infura.io/v3/...
+YYYY-MM-DD HH:MM:SS - INFO - [BlockchainConnector] - Successfully connected to SourceChain. Latest block: <BLOCK_NUMBER>
+YYYY-MM-DD HH:MM:SS - INFO - [BlockchainConnector] - Connecting to DestinationChain via https://polygon-mainnet.infura.io/v3/...
+YYYY-MM-DD HH:MM:SS - INFO - [BlockchainConnector] - Successfully connected to DestinationChain. Latest block: <BLOCK_NUMBER>
+YYYY-MM-DD HH:MM:SS - INFO - [BridgeContractMonitor] - Monitoring contract at 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
+YYYY-MM-DD HH:MM:SS - INFO - [CrossChainBridgeListener] - Service started. Listening for new cross-chain events...
+YYYY-MM-DD HH:MM:SS - INFO - [BridgeContractMonitor] - Polling for 'Transfer' events to 0x...vault_address... from block <START_BLOCK>...
+YYYY-MM-DD HH:MM:SS - INFO - [BridgeContractMonitor] - Found 1 new event(s).
+YYYY-MM-DD HH:MM:SS - INFO - [EventProcessor] - Processing event from transaction: 0x...hash...
+YYYY-MM-DD HH:MM:SS - INFO - [EventProcessor] - Fetched price for 'ethereum': $<PRICE>
+YYYY-MM-DD HH:MM:SS - INFO - [EventProcessor] - Successfully processed event. Locked value: $<VALUE>
+YYYY-MM-DD HH:MM:SS - WARNING - [TransactionBroadcaster] - --- SIMULATION MODE --- Not broadcasting a real transaction.
+YYYY-MM-DD HH:MM:SS - INFO - [TransactionBroadcaster] - 
 >>> SIMULATING UNLOCK TRANSACTION ON CHAIN 'DestinationChain' <<
     -> To User: 0x...user_address...
     -> Token Address (on dest. chain): [Corresponding wrapped asset address]
     -> Amount: 500000000000000000 (wei equivalent)
     -> Source Tx Hash: 0x...hash...
 ----------------------------------------------------------------------
-2023-10-27 14:30:10 - INFO - [TransactionBroadcaster] - Simulation complete for source tx 0x...hash...
+YYYY-MM-DD HH:MM:SS - INFO - [TransactionBroadcaster] - Simulation complete for source tx 0x...hash...
 ```
