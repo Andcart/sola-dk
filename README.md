@@ -6,8 +6,8 @@ This project is a Python-based simulation of a critical backend component for a 
 
 -   **Asynchronous Core:** Built with `asyncio` for efficient handling of I/O-bound tasks like network requests to RPC endpoints and APIs.
 -   **Modular & Extensible:** Each component (`Connector`, `Monitor`, `Processor`, `Broadcaster`) has a single responsibility, making the system easy to extend or modify.
--   **Configuration Driven:** All sensitive and environment-specific data (RPC URLs, contract addresses) is managed via a `.env` file.
--   **Real-World Simulation:** Enriches blockchain event data with real-time external data via an API call (CoinGecko for token prices).
+-   **Configuration-Driven:** All sensitive and environment-specific data (RPC URLs, contract addresses) is managed via a `.env` file.
+-   **Real-World Simulation:** Enriches blockchain event data with real-time external data via an API call (e.g., CoinGecko for token prices).
 -   **Safe by Design:** Simulates the final, state-changing transaction without requiring private keys or real funds, making it safe to run and test.
 
 ## Concept
@@ -39,6 +39,10 @@ The script is designed with a clear separation of concerns, using distinct class
 The modular design enables a clean composition of components. The following is a simplified view of how they are orchestrated in the main script, illustrating a dependency injection pattern:
 
 ```python
+import asyncio
+
+# ... (assuming component classes are defined above)
+
 def main():
     # Load configuration from .env
     config = load_config()
@@ -122,7 +126,7 @@ venv\Scripts\activate
 
 ### 4. Install Dependencies
 
-Create a `requirements.txt` file in the project root with the following content:
+Create a `requirements.txt` file in the project root. This is a standard way to manage project dependencies.
 
 ```
 web3
@@ -130,7 +134,7 @@ python-dotenv
 aiohttp
 ```
 
-Then, install the libraries using pip:
+Then, install the required libraries using pip:
 
 ```bash
 pip install -r requirements.txt
@@ -140,7 +144,7 @@ pip install -r requirements.txt
 
 Create a file named `.env` in the root of the project directory. You will need RPC endpoint URLs for an Ethereum node (source) and a Polygon node (destination), which you can get for free from services like [Infura](https://infura.io/) or [Alchemy](https://www.alchemy.com/). You also need to specify the contract address to monitor and the "vault" address where assets are locked.
 
-Copy the following into your `.env` file and replace the placeholders with your actual RPC URLs:
+Copy the following into your `.env` file and replace the placeholders:
 
 ```env
 # .env file
@@ -155,13 +159,13 @@ CONTRACT_ADDRESS="0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
 
 # The "vault" address that receives locked tokens.
 # The script monitors Transfer events where this address is the recipient.
-# For testing, you can use a real address that receives WETH, like a bridge contract or an exchange deposit address.
+# For testing, find a real address that receives WETH, like a bridge or exchange deposit address.
 BRIDGE_VAULT_ADDRESS="0x1111111111111111111111111111111111111111"
 ```
 
 ### 6. Run the Script
 
-Execute the main script from your terminal:
+Execute the main script from your terminal. The script will start polling from a recent block; depending on contract activity, it may take a few moments to find and process the first event.
 
 ```bash
 python script.py
@@ -169,9 +173,9 @@ python script.py
 
 ### 7. Expected Output
 
-The script will start, connect to the chains, and begin polling for events from the hardcoded start block. You should see output similar to the following as it finds and processes events:
+The script will start, connect to the chains, and begin polling for events. You should see output similar to the following as it finds and processes them:
 
-```
+```text
 2023-10-27 14:30:00 - INFO - [CrossChainBridgeListener] - Initializing Cross-Chain Bridge Listener service...
 2023-10-27 14:30:01 - INFO - [BlockchainConnector] - Connecting to SourceChain via https://mainnet.infura.io/v3/...
 2023-10-27 14:30:03 - INFO - [BlockchainConnector] - Successfully connected to SourceChain. Latest block: 19500125
