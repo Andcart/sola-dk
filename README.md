@@ -2,6 +2,14 @@
 
 This project is a Python-based simulation of a critical backend component for a cross-chain bridge. It serves as an architectural showcase, demonstrating a robust, modular, and asynchronous approach to monitoring blockchain events and orchestrating cross-chain actions.
 
+## Features
+
+-   **Asynchronous Core:** Built with `asyncio` for efficient handling of I/O-bound tasks like network requests to RPC endpoints and APIs.
+-   **Modular & Extensible:** Each component (`Connector`, `Monitor`, `Processor`, `Broadcaster`) has a single responsibility, making the system easy to extend or modify.
+-   **Configuration Driven:** All sensitive and environment-specific data (RPC URLs, contract addresses) is managed via a `.env` file.
+-   **Real-World Simulation:** Enriches blockchain event data with real-time external data via an API call (CoinGecko for token prices).
+-   **Safe by Design:** Simulates the final, state-changing transaction without requiring private keys or real funds, making it safe to run and test.
+
 ## Concept
 
 A cross-chain bridge allows users to transfer assets or data from one blockchain (the *source chain*) to another (the *destination chain*). A common mechanism for this is the "lock-and-mint" model:
@@ -28,10 +36,9 @@ The script is designed with a clear separation of concerns, using distinct class
 
 ### Orchestration Example
 
-The modular design allows for a clean composition of components in the main script, illustrating the dependency injection pattern.
+The modular design enables a clean composition of components. The following is a simplified view of how they are orchestrated in the main script, illustrating a dependency injection pattern:
 
 ```python
-# A simplified view of how components are orchestrated in script.py
 def main():
     # Load configuration from .env
     config = load_config()
@@ -79,7 +86,7 @@ The data flows through the system in a clear, sequential pipeline:
 
 4.  **Event Processing**: When a new event is detected, its raw log data is passed to the `EventProcessor`. The processor decodes the event's arguments (e.g., sender, amount) and then makes a non-blocking HTTP request to the CoinGecko API to get the current USD price of the transferred token (WETH in this simulation).
 
-5.  **Broadcast Simulation**: The enriched data—now including the transaction hash, user address, amount, and USD value—is sent to the `TransactionBroadcaster`. It formats this data into a human-readable log message that clearly describes the action that would be taken on the destination chain (e.g., "Simulating UNLOCK transaction...").
+5.  **Broadcast Simulation**: The enriched data—now including the transaction hash, user address, amount, and USD value—is sent to the `TransactionBroadcaster`. It formats this data into a human-readable log message that clearly describes the action that would be taken on the destination chain (e.g., `SIMULATING UNLOCK TRANSACTION...`).
 
 6.  **Continuous Operation**: The loop continues by updating the last polled block number and pausing for a configured interval before scanning the next block range. The entire process is asynchronous, making efficient use of I/O-bound operations like network requests.
 
@@ -147,7 +154,8 @@ DESTINATION_CHAIN_RPC_URL="https://polygon-mainnet.infura.io/v3/YOUR_INFURA_PROJ
 CONTRACT_ADDRESS="0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
 
 # The "vault" address that receives locked tokens.
-# The script will monitor Transfer events where this is the destination.
+# The script monitors Transfer events where this address is the recipient.
+# For testing, you can use a real address that receives WETH, like a bridge contract or an exchange deposit address.
 BRIDGE_VAULT_ADDRESS="0x1111111111111111111111111111111111111111"
 ```
 
