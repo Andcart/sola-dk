@@ -1,14 +1,14 @@
 # Sola-DK: Cross-Chain Bridge Event Listener Simulator
 
-This repository contains a Python script that simulates a critical backend component of a cross-chain bridge. It is designed as an architectural showcase, demonstrating a robust, modular, and asynchronous approach to monitoring blockchain events and orchestrating cross-chain actions.
+This project is a Python-based simulation of a critical backend component for a cross-chain bridge. It serves as an architectural showcase, demonstrating a robust, modular, and asynchronous approach to monitoring blockchain events and orchestrating cross-chain actions.
 
 ## Concept
 
 A cross-chain bridge allows users to transfer assets or data from one blockchain (the *source chain*) to another (the *destination chain*). A common mechanism for this is the "lock-and-mint" model:
 
-1.  A user **locks** their assets in a smart contract on the source chain (e.g., locking ETH on Ethereum).
+1.  A user **locks** their assets in a smart contract on the source chain (e.g., locking WETH on Ethereum).
 2.  A network of off-chain listeners (oracles) detects this `TokensLocked` event.
-3.  These listeners then trigger a transaction on the destination chain to **mint** a corresponding wrapped asset (e.g., minting ETH-on-Polygon).
+3.  These listeners then trigger a transaction on the destination chain to **mint** a corresponding wrapped asset (e.g., minting WETH-on-Polygon).
 
 This project simulates the off-chain listener component. It monitors a contract on a source chain for specific events, processes the event data, enriches it with external information (like token price), and then simulates the final transaction on the destination chain.
 
@@ -24,7 +24,7 @@ The script is designed with a clear separation of concerns, using distinct class
 
 -   `EventProcessor`: Acts as the data transformation layer. It takes raw event logs from the monitor, decodes them, and enriches them with valuable metadata. In this simulation, it makes an asynchronous API call to CoinGecko to fetch the real-time USD price of the locked asset.
 
--   `TransactionBroadcaster`: This component represents the final step. In a real-world scenario, it would sign and broadcast a transaction on the destination chain to complete the bridge transfer. In this simulation, it logs a detailed, formatted message describing the transaction it *would* have sent, providing a clear view of the intended action without requiring private keys or funds.
+-   `TransactionBroadcaster`: This component represents the final step. In a real-world scenario, it would sign and broadcast a transaction on the destination chain to complete the bridge transfer. In this simulation, it logs a detailed, formatted message that simulates the transaction it *would* have broadcast, providing a clear view of the intended action without requiring private keys or funds.
 
 ### Orchestration Example
 
@@ -71,11 +71,11 @@ The data flows through the system in a clear, sequential pipeline:
 
 ## How It Works
 
-1.  **Initialization**: The `CrossChainBridgeListener` starts, reading configuration details (like RPC URLs) from a `.env` file and instantiating all the necessary components.
+1.  **Initialization**: The `CrossChainBridgeListener` starts, reading configuration details (like RPC URLs and contract addresses) from a `.env` file and instantiating all necessary components.
 
 2.  **Connection**: It uses `BlockchainConnector` instances to establish and verify connections to both the source and destination chain RPC endpoints.
 
-3.  **Listening Loop**: The `BridgeContractMonitor` enters an asynchronous loop. In each iteration, it queries a range of blocks on the source chain for new `Transfer` events directed to a predefined "bridge vault" address.
+3.  **Listening Loop**: The `BridgeContractMonitor` enters an asynchronous loop. In each iteration, it queries a range of blocks on the source chain for new `Transfer` events directed to the configured "bridge vault" address.
 
 4.  **Event Processing**: When a new event is detected, its raw log data is passed to the `EventProcessor`. The processor decodes the event's arguments (e.g., sender, amount) and then makes a non-blocking HTTP request to the CoinGecko API to get the current USD price of the transferred token (WETH in this simulation).
 
@@ -115,7 +115,15 @@ venv\Scripts\activate
 
 ### 4. Install Dependencies
 
-Install the required Python libraries from the `requirements.txt` file.
+Create a `requirements.txt` file in the project root with the following content:
+
+```
+web3
+python-dotenv
+aiohttp
+```
+
+Then, install the libraries using pip:
 
 ```bash
 pip install -r requirements.txt
@@ -123,16 +131,24 @@ pip install -r requirements.txt
 
 ### 5. Configure Environment Variables
 
-Create a file named `.env` in the root of the project directory. You will need RPC endpoint URLs for an Ethereum node (source) and a Polygon node (destination). You can get these for free from services like [Infura](https://infura.io/) or [Alchemy](https://www.alchemy.com/).
+Create a file named `.env` in the root of the project directory. You will need RPC endpoint URLs for an Ethereum node (source) and a Polygon node (destination), which you can get for free from services like [Infura](https://infura.io/) or [Alchemy](https://www.alchemy.com/). You also need to specify the contract address to monitor and the "vault" address where assets are locked.
 
 Copy the following into your `.env` file and replace the placeholders with your actual RPC URLs:
 
 ```env
 # .env file
 
-# Example using Infura:
+# RPC endpoint URLs (get free ones from Infura, Alchemy, etc.)
 SOURCE_CHAIN_RPC_URL="https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID"
 DESTINATION_CHAIN_RPC_URL="https://polygon-mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID"
+
+# Address of the token contract to monitor on the source chain
+# (Example: WETH contract on Ethereum Mainnet)
+CONTRACT_ADDRESS="0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+
+# The "vault" address that receives locked tokens.
+# The script will monitor Transfer events where this is the destination.
+BRIDGE_VAULT_ADDRESS="0x1111111111111111111111111111111111111111"
 ```
 
 ### 6. Run the Script
